@@ -13,7 +13,7 @@ class Pocker {
     const _category=['方','梅','红','黑']
     const pockerEmpty =  new Array(54).fill("")
     return pockerEmpty.map((item,ind)=>{
-      if(ind==53) return {id:ind, weight:15, color:'JOCKER',label:'JOCKER',checked:false}
+      if(ind==53) return {id:ind, weight:15, color:'JOCKER',label:'Jocker',checked:false}
       if(ind==52) return {id:ind ,weight:14, color:'Jocker',label:'Jocker',checked:false}
       return {
         id:ind, 
@@ -44,7 +44,10 @@ class Pocker {
     const arr = [...this.randomedList]
     const playerObj = {...new Array(this.playerCount).fill().map(()=> new Array())}
     const spliceInd =  Math.floor(Math.random() * (arr.length-1))
-    const floorList =  arr.splice(spliceInd,3)
+    const floorList =  arr.splice(spliceInd,3).map(p=>{
+      p.checked= true
+      return p
+    })
     
     arr.forEach((item,ind)=>{
       playerObj[ind % this.playerCount].push(item)

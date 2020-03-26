@@ -22,15 +22,33 @@ class PokeController {
     const user = pock.players.filter( u =>{
       return u.uid === uid
     })
-    if(user[0]){
-      return user[0].pock
-    }else{
-      return false
-    }
+    return user[0]
   }
   static getFloorByRid(rid){
     const pock =  roomToPoke[rid]
     return roomToPoke[rid].floorPock
+  }
+
+  static floorToPlayer(rid,uid){
+    const pock =  roomToPoke[rid]
+    const floorPoke = PokeController.getFloorByRid(rid)
+    console.log(`当前底牌${JSON.stringify(floorPoke,null,2)}`)
+    const u = PokeController.getPokeByRUid(rid,uid)
+    u.pock = u.pock.concat(floorPoke)
+  }
+
+  static removePokeFromPlayer(rid,uid,pokeList){
+    const a = pokeList.map(i=>i.id)
+    const u = PokeController.getPokeByRUid(rid,uid)
+    u.pock = u.pock.filter((p)=> {
+      p.checked = false
+      return !a.includes(p.id)
+    } )
+  }
+  // 牌型检测器
+  static checkModel(creent,playTop){
+    // TODO
+    return true
   }
 }
 

@@ -40,9 +40,9 @@ io.on('connection', function(socket){
     const room = RoomsController.getRoomByRid(rid)
     RoomsController.joinRoom(uid,room,socket)
     io.to(room.id).emit('roomChannel',{ room ,code:200})
-    io.to(room.chatId).emit('chat',{msg:'聊天弹幕链接成功'})
+    socket.emit('chat',{msg:'聊天弹幕链接成功'})
+    io.to(room.chatId).emit('chat',{msg:`${uid}加入了房间`})
     io.sockets.emit('roomList',{ list:RoomsController.getRooms(),code:200 } )
-    console.log(`${uid}加入了房间${rid}`)
   })
 
   // 房内聊天
@@ -63,15 +63,31 @@ io.on('connection', function(socket){
     const room =  RoomsController.getRoomByUser(uid)
     const isGame = room.userReady(uid,flag)
     console.log(`${uid}玩家已${flag?'准备':'取消准备'}`)
-    if(isGame) console.log('玩家都准备,游戏开始')
+    if(isGame) console.log('玩家都准备,游戏开始=====',room)
     io.to(room.id).emit('roomChannel',{ room ,code:200})
   })
 
   // 玩家获取手牌
-  socket.on('getPoke',(uid,rid)=>{
+  socket.on('getPoke',(uid)=>{
     const room =  RoomsController.getRoomByUser(uid)
-    const poke = PockController.getPokeByRUid(rid,uid)
-    socket.emit('gameChannel',{ data:{room,poke},code:200 })
+    const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
+    console.log('获取手牌',poke)
+    socket.emit('gameChannel',{ room,poke,code:200 })
+
+  })
+
+   // 玩家出牌
+   socket.on('gameChannel',(uid,data)=>{
+    const room =  RoomsController.getRoomByUser(uid)
+    console.log(room)
+    if(room.gameStatus==='grab'){
+      room.graber(uid,data)
+    }else if(room.gameStatus==='game'){
+      console.log('游戏中')
+      room.render(uid,data)
+    }
+    const { pock:poke } = PockController.getPokeByRUid(room.id,uid)
+    socket.emit('gameChannel',{ room,poke,code:200 })
 
   })
 
