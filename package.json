@@ -4,8 +4,7 @@
   "description": "",
   "main": "poker.js",
   "scripts": {
-    "serve": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pm2 start server.js --watch"
   },
   "keywords": [],
   "author": "",

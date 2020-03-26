@@ -77,7 +77,7 @@ io.on('connection', function(socket){
 
   //玩家掉线
   socket.on('disconnect',()=>{
-    console.log(`${socket.id}断开了链接`)
+    console.log(`${socket.id}断开了链接!!!!!!!`)
   })
 })
 
