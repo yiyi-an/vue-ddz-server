@@ -59,31 +59,32 @@ module.exports = class Room {
     const readyStatusArr = this.currentPlayer.map(u=>{
       if(u.uid === uid) {
         u.isReady = flag
+        u.message =flag ? '已准备' :''
       }
       return u.isReady
     })
     // 如果准备玩家数量 === 3 并且都准备游戏开始 就发牌
-    // if(readyStatusArr.length === 3 ){
+    if(readyStatusArr.length === 3 ){
+      if(readyStatusArr.sort()[0] === true ){
+        this.currentIndex = Math.floor(Math.random()*3)
+        this.gameStatus = "grab"
+        this.currentPlayer.forEach(p=>p.message ='')
+        PokeController.dealPoke(this)
+        return true
+      }
+    }
+
+    //测试用
+    // if(readyStatusArr.length === 1 ){
     //   if(readyStatusArr.sort()[0] === true ){
-    //     this.currentIndex = Math.floor(Math.random()*3)
+    //     this.currentIndex = this.currentPlayer[0].index
     //     this.gameStatus = "grab"
     //     PokeController.dealPoke(this)
     //     return true
     //   }
     // }
-
-    //测试用
-    if(readyStatusArr.length === 1 ){
-      if(readyStatusArr.sort()[0] !== true ){
-        this.currentIndex = this.currentPlayer[0].index
-        this.gameStatus = "grab"
-        PokeController.dealPoke(this)
-        return true
-      }
-    }
   }
   graber(uid,jetton){
-    console.log(jetton)
     if(jetton == 3){
       // 如果是3分 , 1.发地主牌  2.清空所有玩家message 3.改变room状态为game
       console.log(`${uid}抢到了地主`)

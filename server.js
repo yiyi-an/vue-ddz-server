@@ -87,7 +87,7 @@ io.on('connection', function(socket){
       room.render(uid,data)
     }
     const { pock:poke } = PockController.getPokeByRUid(room.id,uid)
-    socket.emit('gameChannel',{ room,poke,code:200 })
+    io.to(room.id).emit('gameChannel',{ room,poke,code:200 })
 
   })
 
