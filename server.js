@@ -94,6 +94,22 @@ io.on('connection', function(socket){
   //玩家掉线
   socket.on('disconnect',()=>{
     console.log(`${socket.id}断开了链接!!!!!!!`)
+    var leaveRid = RoomsController.getPlayerBySid(socket.id)
+    if(leaveRid){
+      // 如果玩家在房间 
+      const room = RoomsController.getRoomByRid(leaveRid)
+      const {sid,uid} =  room.userLeve(socket.id)
+      RoomsController.delUser(sid,uid)
+      
+      if(room.currentPlayer.length ===0){
+        RoomsController.delRoom(room.id)
+      }
+      io.to(room.id).emit('roomChannel',{ room ,code:200})
+      io.to(room.chatId).emit('chat',{msg:`${uid} 离开了房间!`})
+      io.sockets.emit('roomList',{ list:RoomsController.getRooms(),code:200 } )
+    }else{
+      console.log("玩家不在房间,默默的离开")
+    }
   })
 })
 
@@ -107,6 +123,9 @@ http.listen(10068, function(){
 
 
 const createClientId = ()=>{
-  const attr = 'abcdefghijklmnopqrstuvwxyz'
-  return attr[Math.floor(Math.random() * attr.length )]+ Number(new Date())
+  const attr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY'
+  const ti = (+new Date()).toString().split('').reverse().slice(0,-2).join("")
+  const f = attr[Math.floor(Math.random() * attr.length )]
+  const s = attr[Math.floor(Math.random() * attr.length )]
+   return `${f}${s}${ti}`
 }

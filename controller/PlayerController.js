@@ -1,4 +1,5 @@
 const playsMap = {}
+
 class Player {
   static create({uid,sid,index} ){
     const p ={
@@ -20,6 +21,14 @@ class Player {
       console.log('玩家不存在')
     }
   }
+  static resetPlayer(...users){
+    users.forEach(u=>{
+      u.isReady = false,
+      u.message = '',
+      u.topPoke = []
+    })
+  }
+
 }
 
 module.exports = Player

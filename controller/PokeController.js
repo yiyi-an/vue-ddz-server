@@ -14,7 +14,7 @@ class PokeController {
     })
     roomToPoke[room.id] = this
   }
-  static dealing(room){
+  static dealPoke(room){
     new PokeController(room)
   }
   static getPokeByRUid(rid,uid){
