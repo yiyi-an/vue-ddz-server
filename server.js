@@ -1,9 +1,11 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+const  { createClientId }  = require('./utils')
 
 var RoomsController = require('./controller/RoomsController.js')
 var PockController = require('./controller/PokeController.js')
+
 
 io.on('connection', function(socket){
   console.log(`新建立连接:${socket.id}`);
@@ -17,12 +19,6 @@ io.on('connection', function(socket){
     });  
     console.log(`用户登录:${socket.id}`);
     socket.emit('roomList',{ list:RoomsController.getRooms(),code:200 } )
-  })
-
-
-  // 房间列表
-  socket.on('roomList', ()=>{
-    socket.emit('roomList', JSON.stringify(roomArray));
   })
 
   // 创建房间
@@ -51,10 +47,34 @@ io.on('connection', function(socket){
     io.to(room.chatId).emit('chat',{msg:message})
   })
   
-  // 获取房间信息
-  socket.on('roomChannel',uid=>{
+
+   // 获取房间信息,玩家状态 不包括手牌 
+   socket.on('roomChannel',(uid,data)=>{
     const room =  RoomsController.getRoomByUser(uid)
-    io.to(room.id).emit('roomChannel',{ room ,code:200})
+    if(room.gameStatus==='grab'){
+      room.graber(uid,data)
+      if(room.gameStatus==='game'){
+        const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
+        socket.emit('getPoke',{ room,poke,code:200 })
+      }
+    }else if(room.gameStatus==='game'){
+      const res = room.render(uid,data)
+      if(res==='error'){
+        // 出牌操作不合理
+        return socket.emit('chat',{msg:'所选牌型不合理'})
+      }else if(res==='success'){
+        // 出牌操作合理并且不是过牌
+        if(data!=='pass'){
+          const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
+          socket.emit('getPoke',{ room,poke,code:200 })
+        }
+      }else if(res==='win'){
+        room.gameover()
+      }
+
+    }
+    io.to(room.id).emit('roomChannel',{ room,code:200 })
+
   })
 
  
@@ -68,28 +88,13 @@ io.on('connection', function(socket){
   })
 
   // 玩家获取手牌
-  socket.on('getPoke',(uid)=>{
+  socket.on('getPoke',(uid,type)=>{
     const room =  RoomsController.getRoomByUser(uid)
     const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
-    console.log('获取手牌',poke)
-    socket.emit('gameChannel',{ room,poke,code:200 })
+    socket.emit('getPoke',{ room,poke,code:200 })
 
   })
 
-   // 玩家出牌
-   socket.on('gameChannel',(uid,data)=>{
-    const room =  RoomsController.getRoomByUser(uid)
-    console.log(room)
-    if(room.gameStatus==='grab'){
-      room.graber(uid,data)
-    }else if(room.gameStatus==='game'){
-      console.log('游戏中')
-      room.render(uid,data)
-    }
-    const { pock:poke } = PockController.getPokeByRUid(room.id,uid)
-    io.to(room.id).emit('gameChannel',{ room,poke,code:200 })
-
-  })
 
   //玩家掉线
   socket.on('disconnect',()=>{
@@ -119,13 +124,3 @@ io.on('connection', function(socket){
 http.listen(10068, function(){
 	console.log('服务启动,端口号:10068');
 });
-
-
-
-const createClientId = ()=>{
-  const attr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY'
-  const ti = (+new Date()).toString().split('').reverse().slice(0,-2).join("")
-  const f = attr[Math.floor(Math.random() * attr.length )]
-  const s = attr[Math.floor(Math.random() * attr.length )]
-   return `${f}${s}${ti}`
-}

@@ -25,16 +25,14 @@ class PokeController {
     return user[0]
   }
   static getFloorByRid(rid){
-    const pock =  roomToPoke[rid]
     return roomToPoke[rid].floorPock
   }
 
-  static floorToPlayer(rid,uid){
-    const pock =  roomToPoke[rid]
-    const floorPoke = PokeController.getFloorByRid(rid)
-    console.log(`当前底牌${JSON.stringify(floorPoke,null,2)}`)
-    const u = PokeController.getPokeByRUid(rid,uid)
+  static floorToRoomAndUser(room,uid){
+    const floorPoke = PokeController.getFloorByRid(room.id)
+    const u = PokeController.getPokeByRUid(room.id,uid)
     u.pock = u.pock.concat(floorPoke)
+    room.floorPoke = floorPoke
   }
 
   static removePokeFromPlayer(rid,uid,pokeList){
@@ -44,6 +42,11 @@ class PokeController {
       p.checked = false
       return !a.includes(p.id)
     } )
+    if(u.pock.length===0){
+      return 'win'
+    }else{
+      return 'success'
+    }
   }
   // 牌型检测器
   static checkModel(creent,playTop){

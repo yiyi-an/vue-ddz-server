@@ -18,6 +18,7 @@ module.exports = class Room {
     ){
     this.currentIndex = 0
     this.playerNum = 0
+    this.floorPoke = []
     this.currentPlayer= []
     this.currentPoke=[] //当前牌型
     this.id = id
@@ -87,15 +88,14 @@ module.exports = class Room {
   graber(uid,jetton){
     if(jetton == 3){
       // 如果是3分 , 1.发地主牌  2.清空所有玩家message 3.改变room状态为game
-      console.log(`${uid}抢到了地主`)
       this.landlord = uid
       this.jetton = jetton
-      this.gameStatus = 'game'
+      this.gameStatus = "game"
       this.currentPlayer.forEach(p=>p.message = '')
       const player = PlayerController.getPlayByUid(uid)
       player.message = `地主我当了`
       player.isLandlord = true
-      PokeController.floorToPlayer(this.id,uid)
+      PokeController.floorToRoomAndUser(this,uid)
     }else if(jetton==0){
       this.currentIndex = (this.currentIndex+1) % 3
       const player = PlayerController.getPlayByUid(uid)
@@ -109,24 +109,30 @@ module.exports = class Room {
     
   }
   render(uid,data){
+    const player = PlayerController.getPlayByUid(uid)
     if(data=='pass'){
       this.currentIndex = (this.currentIndex+1) % 3
-      const player = PlayerController.getPlayByUid(uid)
       player.message = `Pass`
       player.topPoke = []
+      PlayerController.clearRoomsPlayerView(this)
+      return 'success'
     }else{
       const flag = PokeController.checkModel(this.currentPoke,data)
       if(flag){
         // 牌型合理
         this.currentIndex = (this.currentIndex+1) % 3
-        PokeController.removePokeFromPlayer(this.id,uid,data)
-        const player = PlayerController.getPlayByUid(uid)
+        this.currentPoke = data
         player.topPoke = data
-
+        PlayerController.clearRoomsPlayerView(this)
+        const  res =  PokeController.removePokeFromPlayer(this.id,uid,data)
+        return res
       }else{
-        return false
+        return 'error'
       }
-     
     }
   }
+  gameover(){
+    // TODO 游戏结束
+  }
+
 }

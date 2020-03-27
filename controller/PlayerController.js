@@ -28,6 +28,13 @@ class Player {
       u.topPoke = []
     })
   }
+    // 该谁操作 把谁的状态清掉
+   
+  static clearRoomsPlayerView(room){
+    const p = room.currentPlayer.filter(p=>p.index ==room.currentIndex)[0]
+    p.message = ''
+    p.topPoke = []
+  }
 
 }
 
