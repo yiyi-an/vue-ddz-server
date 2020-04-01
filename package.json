@@ -4,7 +4,8 @@
   "description": "",
   "main": "poker.js",
   "scripts": {
-    "dev": "pm2 start server.js --watch"
+    "pm": "pm2 start server.js --watch",
+    "serve": "node server.js"
   },
   "keywords": [],
   "author": "",

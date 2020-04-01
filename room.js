@@ -1,11 +1,11 @@
-var PokeController = require('./controller/PokeController.js')
+var PokerController = require('./controller/PokerController.js')
 var PlayerController = require('./controller/PlayerController.js')
 var RoomsController = require('./controller/RoomsController.js')
 /**
   gameStatus {
     等待: wating,
     抢地主: grab,
-    游戏中: game
+    出牌阶段: game
     游戏结束: end
   }
  */
@@ -20,7 +20,7 @@ module.exports = class Room {
     this.playerNum = 0
     this.floorPoke = []
     this.currentPlayer= []
-    this.currentPoke=[] //当前牌型
+    this.currentPoker=[] //当前牌型
     this.id = id
     this.chatId =`chat_${id}` 
     this.empty=['0','1','2'] //空闲座位号
@@ -48,7 +48,7 @@ module.exports = class Room {
     })
     // 重置为等待状态
     this.empty.push(leaveUser.index)
-    this.currentPoke =[]
+    this.currentPoker =[]
     PlayerController.resetPlayer(...this.currentPlayer)
     this.jetton = 0
     this.playerNum--
@@ -64,26 +64,26 @@ module.exports = class Room {
       }
       return u.isReady
     })
-    // 如果准备玩家数量 === 3 并且都准备游戏开始 就发牌
-    if(readyStatusArr.length === 3 ){
-      if(readyStatusArr.sort()[0] === true ){
-        this.currentIndex = Math.floor(Math.random()*3)
-        this.gameStatus = "grab"
-        this.currentPlayer.forEach(p=>p.message ='')
-        PokeController.dealPoke(this)
-        return true
-      }
-    }
-
-    //测试用
-    // if(readyStatusArr.length === 1 ){
+    // 如果准备玩家数量 === 3 并且都准备 就发牌
+    // if(readyStatusArr.length === 3 ){
     //   if(readyStatusArr.sort()[0] === true ){
-    //     this.currentIndex = this.currentPlayer[0].index
+    //     this.currentIndex = Math.floor(Math.random()*3)
     //     this.gameStatus = "grab"
-    //     PokeController.dealPoke(this)
+    //     this.currentPlayer.forEach(p=>p.message ='')
+    //     PokerController.dealPoke(this)
     //     return true
     //   }
     // }
+
+    //测试用
+    if(readyStatusArr.length === 1 ){
+      if(readyStatusArr.sort()[0] === true ){
+        this.currentIndex = this.currentPlayer[0].index
+        this.gameStatus = "grab"
+        PokerController.dealPoke(this)
+        return true
+      }
+    }
   }
   graber(uid,jetton){
     if(jetton == 3){
@@ -95,7 +95,7 @@ module.exports = class Room {
       const player = PlayerController.getPlayByUid(uid)
       player.message = `地主我当了`
       player.isLandlord = true
-      PokeController.floorToRoomAndUser(this,uid)
+      PokerController.floorToRoomAndUser(this,uid)
     }else if(jetton==0){
       this.currentIndex = (this.currentIndex+1) % 3
       const player = PlayerController.getPlayByUid(uid)
@@ -108,28 +108,55 @@ module.exports = class Room {
     }
     
   }
+
+  
+  /**
+   * @description 出牌控制器
+   * @param {*} uid
+   * @param {*} data
+   * @returns {String} | over|error|success  游戏结束 | 牌型错误 | 操作成功
+   */
   render(uid,data){
-    const player = PlayerController.getPlayByUid(uid)
+    const player = this.getPlayerByIndex(this.currentIndex)
+    const prevPlayer = this.getPlayerByIndex(player.index,'prev')
     if(data=='pass'){
       this.currentIndex = (this.currentIndex+1) % 3
       player.message = `Pass`
       player.topPoke = []
       PlayerController.clearRoomsPlayerView(this)
+      if(prevPlayer.message=='Pass'){
+        // 如果上家也是过牌 把当前牌型清除
+        this.currentPoker = []
+      }
       return 'success'
     }else{
-      const flag = PokeController.checkModel(this.currentPoke,data)
-      if(flag){
+      const checkFlag = PokerController.checkModel(this.currentPoker,data)
+      if(checkFlag){
         // 牌型合理
         this.currentIndex = (this.currentIndex+1) % 3
-        this.currentPoke = data
+        this.currentPoker = data
         player.topPoke = data
         PlayerController.clearRoomsPlayerView(this)
-        const  res =  PokeController.removePokeFromPlayer(this.id,uid,data)
-        return res
+        const playerPoker = PokerController.removePokeFromPlayer(this.id,uid,data)
+        if(playerPoker.pokers.length===0){
+          return 'win'
+        }else{
+          return 'success'
+        }
       }else{
-        return 'error'
+        return "error"
       }
     }
+  }
+  getPlayerByIndex(index,desgin){
+    let indexNum
+    if(desgin){
+
+      indexNum = desgin === 'next' ? `${(index+ 1) % 3}` : `${(index+ 2)%3}`
+    }else{
+      indexNum = index
+    }
+    return this.currentPlayer.filter(p=> p.index == indexNum )[0]
   }
   gameover(){
     // TODO 游戏结束

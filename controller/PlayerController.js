@@ -32,8 +32,10 @@ class Player {
    
   static clearRoomsPlayerView(room){
     const p = room.currentPlayer.filter(p=>p.index ==room.currentIndex)[0]
-    p.message = ''
-    p.topPoke = []
+    if(p){
+      p.message = ''
+      p.topPoke = []
+    }
   }
 
 }

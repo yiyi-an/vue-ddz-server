@@ -4,11 +4,10 @@ var io = require('socket.io')(http);
 const  { createClientId }  = require('./utils')
 
 var RoomsController = require('./controller/RoomsController.js')
-var PockController = require('./controller/PokeController.js')
+var PockController = require('./controller/PokerController.js')
 
 
 io.on('connection', function(socket){
-  console.log(`新建立连接:${socket.id}`);
 
   // 登录
   socket.on('login',(uid)=>{
@@ -27,7 +26,7 @@ io.on('connection', function(socket){
     const room = RoomsController.createRoom()
     RoomsController.joinRoom(uid,room,socket)
     io.to(room.id).emit('roomChannel',{ room ,code:200})
-    socket.emit('chat',{msg:'聊天弹幕链接成功'})
+    socket.emit('chat',{ message: '聊天弹幕链接成功'})
     io.sockets.emit('roomList',{ list:RoomsController.getRooms(),code:200 } )
     console.log(`${uid}创建了房间`)
   })
@@ -36,15 +35,15 @@ io.on('connection', function(socket){
     const room = RoomsController.getRoomByRid(rid)
     RoomsController.joinRoom(uid,room,socket)
     io.to(room.id).emit('roomChannel',{ room ,code:200})
-    socket.emit('chat',{msg:'聊天弹幕链接成功'})
-    io.to(room.chatId).emit('chat',{msg:`${uid}加入了房间`})
+    socket.emit('chat',{ message: '聊天弹幕链接成功'})
+    io.to(room.chatId).emit('chat',{ message: `${uid}加入了房间`})
     io.sockets.emit('roomList',{ list:RoomsController.getRooms(),code:200 } )
   })
 
   // 房内聊天
   socket.on('chat',(message,uid)=>{
     const room =  RoomsController.getRoomByUser(uid)
-    io.to(room.chatId).emit('chat',{msg:message})
+    io.to(room.chatId).emit('chat',{ message: message})
   })
   
 
@@ -54,24 +53,27 @@ io.on('connection', function(socket){
     if(room.gameStatus==='grab'){
       room.graber(uid,data)
       if(room.gameStatus==='game'){
-        const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
-        socket.emit('getPoke',{ room,poke,code:200 })
+        const { pokers }  = PockController.getPokeByRidUid(room.id,uid)
+        socket.emit('getPokers',{ room,pokers,code:200 })
       }
     }else if(room.gameStatus==='game'){
-      const res = room.render(uid,data)
-      if(res==='error'){
-        // 出牌操作不合理
-        return socket.emit('chat',{msg:'所选牌型不合理'})
-      }else if(res==='success'){
-        // 出牌操作合理并且不是过牌
-        if(data!=='pass'){
-          const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
-          socket.emit('getPoke',{ room,poke,code:200 })
-        }
-      }else if(res==='win'){
-        room.gameover()
+      // 
+      const flag = room.render(uid,data)
+      switch(flag){
+        case "error":
+          socket.emit('chat',{type:'info',message:'所选牌型不合理'})
+          return
+        case "success":
+          if(data!=='pass'){
+            // 出牌后和玩家同步手牌 放作弊
+            const { pokers }  = PockController.getPokeByRidUid(room.id,uid)
+            socket.emit('getPokers',{ room,pokers,code:200 })
+          }
+          break
+        case "win":
+          room.gameover()
+          break
       }
-
     }
     io.to(room.id).emit('roomChannel',{ room,code:200 })
 
@@ -82,16 +84,15 @@ io.on('connection', function(socket){
   socket.on('ready' , (uid,flag)=>{
     const room =  RoomsController.getRoomByUser(uid)
     const isGame = room.userReady(uid,flag)
-    console.log(`${uid}玩家已${flag?'准备':'取消准备'}`)
     if(isGame) console.log('玩家都准备,游戏开始=====',room)
     io.to(room.id).emit('roomChannel',{ room ,code:200})
   })
 
   // 玩家获取手牌
-  socket.on('getPoke',(uid,type)=>{
+  socket.on('getPokers',(uid,type)=>{
     const room =  RoomsController.getRoomByUser(uid)
-    const { pock:poke }  = PockController.getPokeByRUid(room.id,uid)
-    socket.emit('getPoke',{ room,poke,code:200 })
+    const { pokers }  = PockController.getPokeByRidUid(room.id,uid)
+    socket.emit('getPokers',{ room,pokers,code:200 })
 
   })
 
@@ -110,7 +111,7 @@ io.on('connection', function(socket){
         RoomsController.delRoom(room.id)
       }
       io.to(room.id).emit('roomChannel',{ room ,code:200})
-      io.to(room.chatId).emit('chat',{msg:`${uid} 离开了房间!`})
+      io.to(room.chatId).emit('chat',{ message: `${uid} 离开了房间!`})
       io.sockets.emit('roomList',{ list:RoomsController.getRooms(),code:200 } )
     }else{
       console.log("玩家不在房间,默默的离开")
