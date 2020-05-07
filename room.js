@@ -65,25 +65,25 @@ module.exports = class Room {
       return u.isReady
     })
     // 如果准备玩家数量 === 3 并且都准备 就发牌
-    // if(readyStatusArr.length === 3 ){
-    //   if(readyStatusArr.sort()[0] === true ){
-    //     this.currentIndex = Math.floor(Math.random()*3)
-    //     this.gameStatus = "grab"
-    //     this.currentPlayer.forEach(p=>p.message ='')
-    //     PokerController.dealPoke(this)
-    //     return true
-    //   }
-    // }
-
-    //测试用
-    if(readyStatusArr.length === 1 ){
+    if(readyStatusArr.length === 3 ){
       if(readyStatusArr.sort()[0] === true ){
-        this.currentIndex = this.currentPlayer[0].index
+        this.currentIndex = Math.floor(Math.random()*3)
         this.gameStatus = "grab"
+        this.currentPlayer.forEach(p=>p.message ='')
         PokerController.dealPoke(this)
         return true
       }
     }
+
+    //测试用
+    // if(readyStatusArr.length === 1 ){
+    //   if(readyStatusArr.sort()[0] === true ){
+    //     this.currentIndex = this.currentPlayer[0].index
+    //     this.gameStatus = "grab"
+    //     PokerController.dealPoke(this)
+    //     return true
+    //   }
+    // }
   }
   graber(uid,jetton){
     if(jetton == 3){

@@ -9,15 +9,15 @@ class Pocker {
   }
   // 生成扑克牌
   static list(){
-    const num=['3','4','5','6','7','8','9','10','J','Q','K','A','2',]
+    const num=['3','4','5','6','7','8','9','10','J','Q','K','A','2']
     const _category=['方','梅','红','黑']
     const pockerEmpty =  new Array(54).fill("")
     return pockerEmpty.map((item,ind)=>{
-      if(ind==53) return {id:ind, weight:15, color:'JOCKER',label:'Jocker',checked:false}
-      if(ind==52) return {id:ind ,weight:14, color:'Jocker',label:'Jocker',checked:false}
+      if(ind==53) return {id:ind, weight:17, color:'JOCKER',label:'Jocker',checked:false}
+      if(ind==52) return {id:ind ,weight:16, color:'Jocker',label:'Jocker',checked:false}
       return {
         id:ind, 
-        weight: ind % 13 ,
+        weight: ind % 13 +3,
         color: _category[Math.floor(ind / 13)] , 
         label : num[ ind % 13 ],
         checked:false 
