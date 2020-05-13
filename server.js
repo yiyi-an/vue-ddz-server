@@ -122,6 +122,6 @@ io.on('connection', function(socket){
 
 
 
-http.listen(10068, function(){
+http.listen(10086, function(){
 	console.log('服务启动,端口号:10086');
 });
