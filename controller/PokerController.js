@@ -16,18 +16,18 @@ const roomToPoke = {}
 
 
 
-let CARD_TYPE_INVALID = -1;                 // 无效手牌
-let CARD_TYPE_SINGLE = 1;                   // 单张
-let CARD_TYPE_DOUBLE = 2;                   // 对子
-let CARD_TYPE_THREE = 3;                    // 三张
-let CARD_TYPE_THREE_ONE = 4;                // 三带一（三带一张或者一对）
-let CARD_TYPE_BOMB = 5;                     // 炸弹
-let CARD_TYPE_FORE_TWO = 6;                 // 四带二
-let CARD_TYPE_CONTINUOUS_SIGNGLE = 7;       // 单顺（5张起）
-let CARD_TYPE_CONTINUOUS_DOUBLE = 8;        // 双顺（3对起）
-let CARD_TYPE_AIRPLANE = 9;                 // 飞机 （两个三张起）
-let CARD_TYPE_AIRPLANE_WING = 10;           // 飞机带翅膀 (三顺+同数量单牌或者对牌）
-let CARD_TYPE_KING = 11;                    // 火箭
+const CARD_TYPE_INVALID = -1;                 // 无效手牌
+const CARD_TYPE_SINGLE = 1;                   // 单张
+const CARD_TYPE_DOUBLE = 2;                   // 对子
+const CARD_TYPE_THREE = 3;                    // 三张
+const CARD_TYPE_THREE_ONE = 4;                // 三带一（三带一张或者一对）
+const CARD_TYPE_BOMB = 5;                     // 炸弹
+const CARD_TYPE_FORE_TWO = 6;                 // 四带二
+const CARD_TYPE_CONTINUOUS_SIGNGLE = 7;       // 单顺（5张起）
+const CARD_TYPE_CONTINUOUS_DOUBLE = 8;        // 双顺（3对起）
+const CARD_TYPE_AIRPLANE = 9;                 // 飞机 （两个三张起）
+const CARD_TYPE_AIRPLANE_WING = 10;           // 飞机带翅膀 (三顺+同数量单牌或者对牌）
+const CARD_TYPE_KING = 11;                    // 火箭
 
 
 // 负责组织 发牌,出牌,判断牌型
